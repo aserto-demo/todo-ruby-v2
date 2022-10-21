@@ -1,0 +1,26 @@
+AllCops:
+  NewCops: enable
+  TargetRubyVersion: 2.7
+  Exclude:
+    - vendor/bundle/**/*
+    - gemfiles/*
+    - bin/*
+    - db/**/*
+
+require:
+ - rubocop-rails
+
+Style/Documentation:
+  Enabled: false
+
+Metrics/MethodLength:
+  Max: 30
+
+Metrics/AbcSize:
+  Max: 25
+
+Metrics/CyclomaticComplexity:
+  Max: 10
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
