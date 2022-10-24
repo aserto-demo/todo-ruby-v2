@@ -59,9 +59,16 @@ class User
 
     def client
       @client ||= Aserto::Directory::Reader::V2::Reader::Stub.new(
-        "#{ENV.fetch('ASERTO_DIRECTORY_SERVICE_URL').sub('https://', '')}:8443",
-        GRPC::Core::ChannelCredentials.new
+        ENV.fetch("ASERTO_DIRECTORY_SERVICE_URL"),
+        load_certs
       )
+    end
+
+    def load_certs
+      cert_path = ENV.fetch("ASERTO_CERT_PATH", nil)
+      return GRPC::Core::ChannelCredentials.new unless cert_path
+
+      GRPC::Core::ChannelCredentials.new(File.read(cert_path))
     end
   end
 end
