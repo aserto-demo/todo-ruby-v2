@@ -65,7 +65,7 @@ class User
     end
 
     def load_certs
-      cert_path = ENV.fetch("ASERTO_CERT_PATH", nil)
+      cert_path = ENV.fetch("DIRECTORY_GRPC_CERT_PATH", nil)
       return GRPC::Core::ChannelCredentials.new unless cert_path
 
       GRPC::Core::ChannelCredentials.new(File.read(cert_path))

@@ -29,7 +29,6 @@ gem "aserto", git: "https://github.com/aserto-dev/aserto-ruby", branch: "v2"
 gem "aserto-directory"
 gem "aserto-rails", git: "https://github.com/aserto-dev/aserto-rails", branch: "v2"
 
-
 gem "jwt"
 
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin AJAX possible
