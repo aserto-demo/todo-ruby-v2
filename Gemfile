@@ -25,9 +25,8 @@ gem "tzinfo-data", platforms: %i[mingw mswin x64_mingw jruby]
 
 gem "http"
 
-gem "aserto", git: "https://github.com/aserto-dev/aserto-ruby", branch: "v2"
 gem "aserto-directory"
-gem "aserto-rails", git: "https://github.com/aserto-dev/aserto-rails", branch: "v2"
+gem "aserto-rails"
 
 gem "jwt"
 
