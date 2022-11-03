@@ -3,8 +3,8 @@
 require "aserto/rails"
 
 Aserto.configure do |config|
-  config.policy_name = ENV.fetch("ASERTO_POLICY_NAME", nil)
-  config.instance_label = ENV.fetch("ASERTO_POLICY_LABEL", nil)
+  config.policy_name = ENV.fetch("ASERTO_POLICY_INSTANCE_NAME", nil)
+  config.instance_label = ENV.fetch("ASERTO_POLICY_INSTANCE_LABEL", nil)
   config.tenant_id = ENV.fetch("ASERTO_TENANT_ID", nil)
   config.authorizer_api_key = ENV.fetch("ASERTO_AUTHORIZER_API_KEY", nil)
   config.policy_root = ENV.fetch("ASERTO_POLICY_ROOT", nil)
