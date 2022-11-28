@@ -31,10 +31,14 @@ class TodosController < ApplicationController
 
   # PATCH/PUT /todos/1
   def update
-    if @todo.update(todo_params)
-      render json: @todo
+    if allowed?(:put, "todo/:ownerID", @todo)
+      if @todo.update(todo_params)
+        render json: @todo
+      else
+        render json: @todo.errors, status: :unprocessable_entity
+      end
     else
-      render json: @todo.errors, status: :unprocessable_entity
+      render json: { error: "You are not authorized to access this page." }, status: :forbidden
     end
   end
 
