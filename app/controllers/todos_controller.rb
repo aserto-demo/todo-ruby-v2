@@ -48,8 +48,10 @@ class TodosController < ApplicationController
   private
 
   def configure_aserto
+    return unless @todo
+
     Aserto.with_resource_mapper do |_request|
-      { resource:  { OwnerID: current_owner }.transform_keys!(&:to_s) }
+      { resource:  { OwnerID: @todo.owner_id }.transform_keys!(&:to_s) }
     end
   end
 
