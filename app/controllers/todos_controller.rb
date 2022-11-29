@@ -2,6 +2,7 @@
 
 class TodosController < ApplicationController
   before_action :set_todo, only: %i[show update destroy]
+  before_action :configure_aserto, only: %i[update]
 
   # authorize
   aserto_authorize_resource
@@ -46,6 +47,14 @@ class TodosController < ApplicationController
 
   private
 
+  def configure_aserto
+    return unless @todo
+
+    Aserto.with_resource_mapper do |_request|
+      { resource:  @todo.as_json.transform_keys!(&:to_s) }
+    end
+  end
+
   # Use callbacks to share common setup or constraints between actions.
   def set_todo
     @todo = Todo.find(todo_params[:id])
@@ -61,7 +70,7 @@ class TodosController < ApplicationController
   def normalize_params
     params.delete(:todo)
     ActionController::Parameters.new(
-      params.permit(:ID, :Title, :Completed, :OwnerID, :ownerID).to_h.transform_keys do |key|
+      params.permit(:ID, :Title, :Completed, :OwnerID, :ownerID, :id).to_h.transform_keys do |key|
         key.to_s.tableize.singularize.to_sym
       end
     )
