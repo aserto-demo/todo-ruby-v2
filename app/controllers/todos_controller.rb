@@ -2,7 +2,7 @@
 
 class TodosController < ApplicationController
   before_action :set_todo, only: %i[show update destroy]
-  before_action :configure_aserto, only: %i[update]
+  before_action :configure_aserto, only: %i[update destroy]
 
   # authorize
   aserto_authorize_resource
@@ -21,7 +21,7 @@ class TodosController < ApplicationController
 
   # POST /todos
   def create
-    @todo = Todo.new(todo_params)
+    @todo = Todo.new(todo_params.merge!(owner_id: current_owner))
 
     if @todo.save
       render json: @todo, status: :ok, location: @todo
@@ -48,10 +48,8 @@ class TodosController < ApplicationController
   private
 
   def configure_aserto
-    return unless @todo
-
     Aserto.with_resource_mapper do |_request|
-      { resource:  @todo.as_json.transform_keys!(&:to_s) }
+      { resource:  { OwnerID: current_owner }.transform_keys!(&:to_s) }
     end
   end
 
