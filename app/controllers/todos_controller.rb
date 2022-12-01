@@ -14,7 +14,7 @@ class TodosController < ApplicationController
     render json: @todos
   end
 
-  # GET /todos/1
+  # GET /todos/:id
   def show
     render json: @todo
   end
@@ -30,7 +30,7 @@ class TodosController < ApplicationController
     end
   end
 
-  # PATCH/PUT /todos/1
+  # PATCH/PUT /todos/:id
   def update
     if @todo.update(todo_params)
       render json: @todo
@@ -39,7 +39,7 @@ class TodosController < ApplicationController
     end
   end
 
-  # DELETE /todos/1
+  # DELETE /todos/:id
   def destroy
     @todo.destroy
     render json: { success: true, message: "Todo deleted" }
@@ -51,7 +51,7 @@ class TodosController < ApplicationController
     return unless @todo
 
     Aserto.with_resource_mapper do |_request|
-      { resource:  { OwnerID: @todo.owner_id }.transform_keys!(&:to_s) }
+      {  ownerID: @todo.owner_id }.transform_keys!(&:to_s)
     end
   end
 
@@ -63,6 +63,12 @@ class TodosController < ApplicationController
   # Only allow a list of trusted parameters through.
   def todo_params
     normalize_params.permit(:id, :title, :completed, :owner_id).to_h.transform_keys do |key|
+      key.to_s.tableize.singularize.to_sym
+    end
+  end
+
+  def mutable_params
+    todo_params.permit(:title, :completed).to_h.transform_keys do |key|
       key.to_s.tableize.singularize.to_sym
     end
   end
