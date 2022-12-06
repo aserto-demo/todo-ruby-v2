@@ -21,7 +21,7 @@ class TodosController < ApplicationController
 
   # POST /todos
   def create
-    @todo = Todo.new(todo_params.merge!(owner_id: current_owner))
+    @todo = Todo.new(mutable_todo_params)
 
     if @todo.save
       render json: @todo, status: :ok, location: @todo
@@ -32,7 +32,7 @@ class TodosController < ApplicationController
 
   # PATCH/PUT /todos/:id
   def update
-    if @todo.update(todo_params)
+    if @todo.update(mutable_todo_params)
       render json: @todo
     else
       render json: @todo.errors, status: :unprocessable_entity
@@ -67,10 +67,10 @@ class TodosController < ApplicationController
     end
   end
 
-  def mutable_params
-    todo_params.permit(:title, :completed).to_h.transform_keys do |key|
+  def mutable_todo_params
+    normalize_params.permit(:title, :completed).to_h.transform_keys do |key|
       key.to_s.tableize.singularize.to_sym
-    end
+    end.merge!(owner_id: current_user_sub)
   end
 
   def normalize_params

@@ -13,8 +13,8 @@ class ApplicationController < ActionController::API
     render json: { error: exception.message }, status: :forbidden
   end
 
-  def current_owner
-    @current_owner ||= ((Auth::VerifyJwt.call(request.headers["Authorization"].split.last) || []).first || {})["sub"]
+  def current_user_sub
+    @current_user_sub ||= ((Auth::VerifyJwt.call(request.headers["Authorization"].split.last) || []).first || {})["sub"]
   end
 
   private
