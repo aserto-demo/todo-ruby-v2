@@ -76,7 +76,7 @@ GEM
       grpc (~> 1.46)
     aserto-directory (0.0.1)
       grpc (~> 1.46)
-    aserto-rails (0.20.0)
+    aserto-rails (0.20.1)
       aserto (~> 0.20.2)
     ast (2.4.2)
     builder (3.2.4)
@@ -117,7 +117,7 @@ GEM
     i18n (1.12.0)
       concurrent-ruby (~> 1.0)
     io-console (0.5.11)
-    irb (1.4.2)
+    irb (1.5.1)
       reline (>= 0.3.0)
     json (2.6.2)
     jwt (2.5.0)
@@ -147,7 +147,7 @@ GEM
       mini_portile2 (~> 2.8.0)
       racc (~> 1.4)
     parallel (1.22.1)
-    parser (3.1.2.1)
+    parser (3.1.3.0)
       ast (~> 2.4.1)
     pry (0.14.1)
       coderay (~> 1.1)
@@ -192,11 +192,11 @@ GEM
       zeitwerk (~> 2.5)
     rainbow (3.1.1)
     rake (13.0.6)
-    regexp_parser (2.6.0)
+    regexp_parser (2.6.1)
     reline (0.3.1)
       io-console (~> 0.5)
     rexml (3.2.5)
-    rubocop (1.38.0)
+    rubocop (1.39.0)
       json (~> 2.3)
       parallel (~> 1.10)
       parser (>= 3.1.2.1)
@@ -208,12 +208,12 @@ GEM
       unicode-display_width (>= 1.4.0, < 3.0)
     rubocop-ast (1.23.0)
       parser (>= 3.1.1.0)
-    rubocop-rails (2.17.2)
+    rubocop-rails (2.17.3)
       activesupport (>= 4.2.0)
       rack (>= 1.1)
       rubocop (>= 1.33.0, < 2.0)
     ruby-progressbar (1.11.0)
-    sqlite3 (1.5.3)
+    sqlite3 (1.5.4)
       mini_portile2 (~> 2.8.0)
     thor (1.2.1)
     timeout (0.3.0)
@@ -226,7 +226,7 @@ GEM
     websocket-driver (0.7.5)
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
-    zeitwerk (2.6.5)
+    zeitwerk (2.6.6)
 
 PLATFORMS
   ruby
@@ -241,7 +241,7 @@ DEPENDENCIES
   pry-byebug
   puma (~> 5.0)
   rack-cors
-  rails (~> 7.0.3, >= 7.0.3.1)
+  rails (~> 7.0.4)
   rubocop
   rubocop-rails
   sqlite3 (~> 1.4)

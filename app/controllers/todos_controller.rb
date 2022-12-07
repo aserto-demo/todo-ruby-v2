@@ -2,6 +2,7 @@
 
 class TodosController < ApplicationController
   before_action :set_todo, only: %i[show update destroy]
+  before_action :configure_aserto, only: %i[update destroy]
 
   # authorize
   aserto_authorize_resource
@@ -13,14 +14,14 @@ class TodosController < ApplicationController
     render json: @todos
   end
 
-  # GET /todos/1
+  # GET /todos/:id
   def show
     render json: @todo
   end
 
   # POST /todos
   def create
-    @todo = Todo.new(todo_params)
+    @todo = Todo.new(mutable_todo_params)
 
     if @todo.save
       render json: @todo, status: :ok, location: @todo
@@ -29,22 +30,30 @@ class TodosController < ApplicationController
     end
   end
 
-  # PATCH/PUT /todos/1
+  # PATCH/PUT /todos/:id
   def update
-    if @todo.update(todo_params)
+    if @todo.update(mutable_todo_params)
       render json: @todo
     else
       render json: @todo.errors, status: :unprocessable_entity
     end
   end
 
-  # DELETE /todos/1
+  # DELETE /todos/:id
   def destroy
     @todo.destroy
     render json: { success: true, message: "Todo deleted" }
   end
 
   private
+
+  def configure_aserto
+    return unless @todo
+
+    Aserto.with_resource_mapper do |_request|
+      {  ownerID: @todo.owner_id }.transform_keys!(&:to_s)
+    end
+  end
 
   # Use callbacks to share common setup or constraints between actions.
   def set_todo
@@ -58,10 +67,16 @@ class TodosController < ApplicationController
     end
   end
 
+  def mutable_todo_params
+    normalize_params.permit(:title, :completed).to_h.transform_keys do |key|
+      key.to_s.tableize.singularize.to_sym
+    end.merge!(owner_id: current_user_sub)
+  end
+
   def normalize_params
     params.delete(:todo)
     ActionController::Parameters.new(
-      params.permit(:ID, :Title, :Completed, :OwnerID, :ownerID).to_h.transform_keys do |key|
+      params.permit(:ID, :Title, :Completed, :OwnerID, :ownerID, :id).to_h.transform_keys do |key|
         key.to_s.tableize.singularize.to_sym
       end
     )
