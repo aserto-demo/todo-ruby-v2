@@ -68,9 +68,10 @@ class TodosController < ApplicationController
   end
 
   def mutable_todo_params
+    user = User.find(current_user_sub)
     normalize_params.permit(:title, :completed).to_h.transform_keys do |key|
       key.to_s.tableize.singularize.to_sym
-    end.merge!(owner_id: current_user_sub)
+    end.merge!(owner_id: user.key)
   end
 
   def normalize_params
