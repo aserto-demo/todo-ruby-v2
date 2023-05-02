@@ -3,7 +3,7 @@
 class User
   include ActiveModel::Serializers::JSON
 
-  attr_accessor :id, :display_name, :email, :picture
+  attr_accessor :id, :key, :display_name, :email, :picture
 
   def initialize(hash)
     hash.each { |key, value| public_send("#{key}=", value) }
@@ -12,6 +12,7 @@ class User
   def as_json(_options = {})
     {
       id: id,
+      key: key,
       display_name: display_name,
       email: email,
       picture: picture
@@ -22,19 +23,45 @@ class User
     def find(sub)
       require "aserto/directory"
 
-      object_id = Aserto::Directory::Common::V2::ObjectIdentifier.new(
+      subject = Aserto::Directory::Common::V2::ObjectIdentifier.new(
         type: "user",
         key: sub
       )
-      request = Aserto::Directory::Reader::V2::GetObjectRequest.new(param: object_id)
+      
+      indentity = Aserto::Directory::Common::V2::ObjectIdentifier.new(
+        type: "identity",
+        key: sub
+      )
 
+      relationtype = Aserto::Directory::Common::V2::RelationTypeIdentifier.new(
+        name: 'identifier',
+        object_type: 'identity'
+      )
+
+      relation_id = Aserto::Directory::Common::V2::RelationIdentifier.new(
+        subject: subject,
+        relation: relationtype,
+        object: indentity
+      )
+
+      relationrequest = Aserto::Directory::Reader::V2::GetRelationRequest.new(param: relation_id)
+   
       begin
+        relation = client.get_relation(relationrequest, headers)
+
+        object_id = Aserto::Directory::Common::V2::ObjectIdentifier.new(
+          type: "user",
+          key: relation.results[0].subject.key
+        )
+        request = Aserto::Directory::Reader::V2::GetObjectRequest.new(param: object_id)
+
         resp = client.get_object(request, headers)
 
         result = resp.result
         fields = result.properties.fields
         User.new(
           id: result.id,
+          key: result.key,
           display_name: result.display_name,
           email: fields["email"]["string_value"],
           picture: fields["picture"]["string_value"]
@@ -65,7 +92,7 @@ class User
     end
 
     def load_certs
-      cert_path = ENV.fetch("DIRECTORY_GRPC_CERT_PATH", nil)
+      cert_path = ENV.fetch("ASERTO_DIRECTORY_GRPC_CERT_PATH", nil)
       return GRPC::Core::ChannelCredentials.new unless cert_path
 
       GRPC::Core::ChannelCredentials.new(File.read(cert_path))

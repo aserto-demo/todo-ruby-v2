@@ -3,8 +3,6 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby "2.7.6"
-
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem "rails", "~> 7.0.4"
 
@@ -29,6 +27,8 @@ gem "aserto-directory"
 gem "aserto-rails"
 
 gem "jwt"
+
+gem "llhttp-ffi", "~> 0.5.0"
 
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin AJAX possible
 gem "rack-cors"

@@ -9,7 +9,7 @@ Aserto.configure do |config|
   config.authorizer_api_key = ENV.fetch("ASERTO_AUTHORIZER_API_KEY", nil)
   config.policy_root = ENV.fetch("ASERTO_POLICY_ROOT", nil)
   config.service_url = ENV.fetch("ASERTO_AUTHORIZER_SERVICE_URL")
-  config.cert_path = ENV.fetch("AUTHORIZER_CERT_PATH", nil)
+  config.cert_path = ENV.fetch("ASERTO_AUTHORIZER_CERT_PATH", nil)
   config.decision = "allowed"
   config.logger = Rails.logger
   config.identity_mapping = {

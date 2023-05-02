@@ -8,8 +8,8 @@ ASERTO_AUTHORIZER_SERVICE_URL=localhost:8282
 ASERTO_POLICY_ROOT="todoApp"
 JWKS_URI=https://citadel.demo.aserto.com/dex/keys
 ASERTO_DIRECTORY_SERVICE_URL=localhost:9292
-AUTHORIZER_CERT_PATH=$HOME/.config/topaz/certs/grpc-ca.crt
-DIRECTORY_GRPC_CERT_PATH=$HOME/.config/topaz/certs/grpc-ca.crt
+ASERTO_AUTHORIZER_CERT_PATH=$HOME/.config/topaz/certs/grpc-ca.crt
+ASERTO_DIRECTORY_GRPC_CERT_PATH=$HOME/.config/topaz/certs/grpc-ca.crt
 ```
 
 Install the dependencies and run the DB migration:
