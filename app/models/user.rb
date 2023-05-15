@@ -3,7 +3,7 @@
 class User
   include ActiveModel::Serializers::JSON
 
-  attr_accessor :id, :key, :display_name, :email, :picture
+  attr_accessor :key, :display_name, :email, :picture
 
   def initialize(hash)
     hash.each { |key, value| public_send("#{key}=", value) }
@@ -11,7 +11,6 @@ class User
 
   def as_json(_options = {})
     {
-      id: id,
       key: key,
       display_name: display_name,
       email: email,
@@ -23,44 +22,30 @@ class User
     def find(sub)
       require "aserto/directory"
 
-      subject = Aserto::Directory::Common::V2::ObjectIdentifier.new(
-        type: "user",
-        key: sub
-      )
-      
-      indentity = Aserto::Directory::Common::V2::ObjectIdentifier.new(
-        type: "identity",
-        key: sub
-      )
-
-      relationtype = Aserto::Directory::Common::V2::RelationTypeIdentifier.new(
-        name: 'identifier',
-        object_type: 'identity'
-      )
-
       relation_id = Aserto::Directory::Common::V2::RelationIdentifier.new(
-        subject: subject,
-        relation: relationtype,
-        object: indentity
+        subject: Aserto::Directory::Common::V2::ObjectIdentifier.new(
+          type: "user"
+        ),
+        relation: Aserto::Directory::Common::V2::RelationTypeIdentifier.new(
+          name: "identifier",
+          object_type: "identity"
+        ),
+        object: Aserto::Directory::Common::V2::ObjectIdentifier.new(
+          type: "identity",
+          key: sub
+        )
       )
 
-      relationrequest = Aserto::Directory::Reader::V2::GetRelationRequest.new(param: relation_id)
-   
       begin
-        relation = client.get_relation(relationrequest, headers)
-
-        object_id = Aserto::Directory::Common::V2::ObjectIdentifier.new(
-          type: "user",
-          key: relation.results[0].subject.key
+        relation = client.get_relation(
+          Aserto::Directory::Reader::V2::GetRelationRequest.new(param: relation_id),
+          headers
         )
-        request = Aserto::Directory::Reader::V2::GetObjectRequest.new(param: object_id)
-
+        request = Aserto::Directory::Reader::V2::GetObjectRequest.new(param: relation.results[0].subject)
         resp = client.get_object(request, headers)
-
         result = resp.result
         fields = result.properties.fields
         User.new(
-          id: result.id,
           key: result.key,
           display_name: result.display_name,
           email: fields["email"]["string_value"],
