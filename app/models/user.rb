@@ -49,6 +49,7 @@ class User
       )
     rescue GRPC::BadStatus, StandardError => e
       Rails.logger.error(e)
+      raise StandardError, e.message
     end
 
     def find_by_key(key)
@@ -69,6 +70,7 @@ class User
       )
     rescue GRPC::BadStatus, StandardError => e
       Rails.logger.error(e)
+      raise StandardError, e.message
     end
 
     private
