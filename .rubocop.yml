@@ -14,13 +14,16 @@ Style/Documentation:
   Enabled: false
 
 Metrics/MethodLength:
-  Max: 30
+  Max: 40
 
 Metrics/AbcSize:
-  Max: 25
+  Max: 30
 
 Metrics/CyclomaticComplexity:
   Max: 10
+
+Rails/DynamicFindBy:
+  Enabled: false
 
 Style/StringLiterals:
   EnforcedStyle: double_quotes

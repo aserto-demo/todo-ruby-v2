@@ -19,41 +19,58 @@ class User
   end
 
   class << self
-    def find(sub)
-      require "aserto/directory"
+    def find_by_identity(sub)
+      relation = client.get_relation(
+        Aserto::Directory::Reader::V2::GetRelationRequest.new(param:
+          Aserto::Directory::Common::V2::RelationIdentifier.new(
+            subject: Aserto::Directory::Common::V2::ObjectIdentifier.new(
+              type: "user"
+            ),
+            relation: Aserto::Directory::Common::V2::RelationTypeIdentifier.new(
+              name: "identifier",
+              object_type: "identity"
+            ),
+            object: Aserto::Directory::Common::V2::ObjectIdentifier.new(
+              type: "identity",
+              key: sub
+            )
+          )),
+        headers
+      )
+      request = Aserto::Directory::Reader::V2::GetObjectRequest.new(param: relation.results[0].subject)
+      resp = client.get_object(request, headers)
+      result = resp.result
+      fields = result.properties.fields
+      User.new(
+        key: result.key,
+        display_name: result.display_name,
+        email: fields["email"]["string_value"],
+        picture: fields["picture"]["string_value"]
+      )
+    rescue GRPC::BadStatus, StandardError => e
+      Rails.logger.error(e)
+      raise StandardError, e.message
+    end
 
-      relation_id = Aserto::Directory::Common::V2::RelationIdentifier.new(
-        subject: Aserto::Directory::Common::V2::ObjectIdentifier.new(
-          type: "user"
-        ),
-        relation: Aserto::Directory::Common::V2::RelationTypeIdentifier.new(
-          name: "identifier",
-          object_type: "identity"
-        ),
-        object: Aserto::Directory::Common::V2::ObjectIdentifier.new(
-          type: "identity",
-          key: sub
+    def find_by_key(key)
+      request = Aserto::Directory::Reader::V2::GetObjectRequest.new(
+        param: Aserto::Directory::Common::V2::ObjectIdentifier.new(
+          type: "user",
+          key: key
         )
       )
-
-      begin
-        relation = client.get_relation(
-          Aserto::Directory::Reader::V2::GetRelationRequest.new(param: relation_id),
-          headers
-        )
-        request = Aserto::Directory::Reader::V2::GetObjectRequest.new(param: relation.results[0].subject)
-        resp = client.get_object(request, headers)
-        result = resp.result
-        fields = result.properties.fields
-        User.new(
-          key: result.key,
-          display_name: result.display_name,
-          email: fields["email"]["string_value"],
-          picture: fields["picture"]["string_value"]
-        )
-      rescue GRPC::BadStatus, StandardError => e
-        Rails.logger.error(e)
-      end
+      resp = client.get_object(request, headers)
+      result = resp.result
+      fields = result.properties.fields
+      User.new(
+        key: result.key,
+        display_name: result.display_name,
+        email: fields["email"]["string_value"],
+        picture: fields["picture"]["string_value"]
+      )
+    rescue GRPC::BadStatus, StandardError => e
+      Rails.logger.error(e)
+      raise StandardError, e.message
     end
 
     private
