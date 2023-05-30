@@ -34,7 +34,7 @@ class User
         }
       )
 
-      raise StandardError, "No relations found for identity: #{sub}" if !relation || relation.length == 0
+      raise StandardError, "No relations found for identity: #{sub}" if relation.blank?
 
       subject = relation[0].subject
       user = client.object(key: subject.key, type: subject.type)
