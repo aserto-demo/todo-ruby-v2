@@ -72,7 +72,7 @@ class User
       @client ||= Aserto::Directory::Client.new(
         url: ENV.fetch("ASERTO_DIRECTORY_SERVICE_URL"),
         api_key: "basic #{ENV.fetch('ASERTO_DIRECTORY_API_KEY', nil)}",
-        tenant_id: ENV.fetch("ASERTO_TENANT_ID", nil),
+        tenant_id: ENV.fetch("ASERTO_TENANT_ID", ""),
         cert_path: ENV.fetch("ASERTO_DIRECTORY_GRPC_CERT_PATH", nil)
       )
     end
