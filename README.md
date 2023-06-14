@@ -38,13 +38,13 @@ Install the dependencies and run the DB migration:
 
 ```
 bundle install
-rails db:migrate
+bundle exec rails db:migrate
 
 ```
 Start the server:
 
 ```
-rails s
+bundle exec rails s
 ```
 
 The server will start on `http://localhost:3001`.
