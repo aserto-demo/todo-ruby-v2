@@ -32,7 +32,7 @@ class TodosController < ApplicationController
 
   # PATCH/PUT /todos/:id
   def update
-    if @todo.update(mutable_todo_params)
+    if @todo.update(update_todo_params)
       render json: @todo
     else
       render json: @todo.errors, status: :unprocessable_entity
@@ -67,11 +67,15 @@ class TodosController < ApplicationController
     end
   end
 
-  def mutable_todo_params
-    user = User.find_by_identity(current_user_sub)
+  def update_todo_params
     normalize_params.permit(:title, :completed).to_h.transform_keys do |key|
       key.to_s.tableize.singularize.to_sym
-    end.merge!(owner_id: user.key)
+    end
+  end
+
+  def mutable_todo_params
+    user = User.find_by_identity(current_user_sub)
+    update_todo_params.merge!(owner_id: user.key)
   end
 
   def normalize_params
