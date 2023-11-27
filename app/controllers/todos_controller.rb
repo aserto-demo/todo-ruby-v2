@@ -51,7 +51,7 @@ class TodosController < ApplicationController
     return unless @todo
 
     Aserto.with_resource_mapper do |_request|
-      {  ownerID: @todo.owner_id }.transform_keys!(&:to_s)
+      { ownerID: @todo.owner_id }.transform_keys!(&:to_s)
     end
   end
 
@@ -75,7 +75,7 @@ class TodosController < ApplicationController
 
   def mutable_todo_params
     user = User.find_by_identity(current_user_sub)
-    update_todo_params.merge!(owner_id: user.key)
+    update_todo_params.merge!(owner_id: user.id)
   end
 
   def normalize_params
