@@ -3,7 +3,7 @@
 class User
   include ActiveModel::Serializers::JSON
 
-  attr_accessor :key, :display_name, :email, :picture
+  attr_accessor :id, :display_name, :email, :picture
 
   def initialize(hash)
     hash.each { |key, value| public_send("#{key}=", value) }
@@ -11,7 +11,7 @@ class User
 
   def as_json(_options = {})
     {
-      key: key,
+      id: id,
       display_name: display_name,
       email: email,
       picture: picture
@@ -20,31 +20,27 @@ class User
 
   class << self
     def find_by_identity(sub)
-      relation = client.relation(
-        subject: {
-          type: "user"
-        },
-        relation: {
-          name: "identifier",
-          object_type: "identity"
-        },
-        object: {
-          type: "identity",
-          key: sub
-        }
+      relation = client.get_relation(
+        subject_type: "user",
+        subject_id: nil,
+        relation: "identifier",
+        object_type: "identity",
+        object_id: sub
       )
 
-      raise StandardError, "No relations found for identity: #{sub}" if relation.blank?
+      raise StandardError, "No relations found for identity: #{sub}" if relation&.result.nil?
 
-      subject = relation[0].subject
-      user = client.object(key: subject.key, type: subject.type)
-      fields = user.properties.fields
+      user = client.get_object(
+        object_type: relation.result.subject_type,
+        object_id: relation.result.subject_id
+      ).result
+      fields = user.properties.to_h
 
       User.new(
-        key: user.key,
+        id: user.id,
         display_name: user.display_name,
-        email: fields["email"]["string_value"],
-        picture: fields["picture"]["string_value"]
+        email: fields["email"],
+        picture: fields["picture"]
       )
     rescue GRPC::BadStatus, StandardError => e
       Rails.logger.error(e)
@@ -52,14 +48,14 @@ class User
     end
 
     def find_by_key(key)
-      user = client.object(type: "user", key: key)
-      fields = user.properties.fields
+      user = client.get_object(object_type: "user", object_id: key).result
+      fields = user.properties.to_h
 
       User.new(
-        key: user.key,
+        id: user.id,
         display_name: user.display_name,
-        email: fields["email"]["string_value"],
-        picture: fields["picture"]["string_value"]
+        email: fields["email"],
+        picture: fields["picture"]
       )
     rescue GRPC::BadStatus, StandardError => e
       Rails.logger.error(e)
@@ -69,7 +65,7 @@ class User
     private
 
     def client
-      @client ||= Aserto::Directory::Client.new(
+      @client ||= Aserto::Directory::V3::Client.new(
         url: ENV.fetch("ASERTO_DIRECTORY_SERVICE_URL"),
         api_key: "basic #{ENV.fetch('ASERTO_DIRECTORY_API_KEY', nil)}",
         tenant_id: ENV.fetch("ASERTO_TENANT_ID", ""),
