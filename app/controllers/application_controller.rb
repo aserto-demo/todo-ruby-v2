@@ -14,7 +14,9 @@ class ApplicationController < ActionController::API
   end
 
   def current_user_sub
-    @current_user_sub ||= ((Auth::VerifyJwt.call((request.headers["Authorization"] || "").split.last) || []).first || {})["sub"]
+    @current_user_sub ||= (
+      (Auth::VerifyJwt.call((request.headers["Authorization"] || "").split.last) || []).first || {}
+    )["sub"]
   end
 
   private
