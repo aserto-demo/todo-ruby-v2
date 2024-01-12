@@ -62,6 +62,22 @@ class User
       raise StandardError, e.message
     end
 
+    def insert_todo(todo)
+      client.set_object(object_type: "resource", object_id: todo.ID, display_name: todo.Title, properties: {})
+      client.set_relation(subject_id: todo.OwnerID, subject_type: "user", object_id: todo.ID, object_type: "resource",
+                          relation: "owner")
+    rescue GRPC::BadStatus, StandardError => e
+      Rails.logger.error(e)
+      raise StandardError, e.message
+    end
+
+    def delete_todo(todo_id)
+      client.delete_object(object_type: "resource", object_id: todo_id, with_relations: true)
+    rescue GRPC::BadStatus, StandardError => e
+      Rails.logger.error(e)
+      raise StandardError, e.message
+    end
+
     private
 
     def client
