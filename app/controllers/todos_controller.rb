@@ -63,7 +63,7 @@ class TodosController < ApplicationController
     return unless @todo
 
     Aserto.with_resource_mapper do |_request|
-      { ownerID: @todo.owner_id }.transform_keys!(&:to_s)
+      { object_id: @todo.id.to_s }.transform_keys!(&:to_s)
     end
   end
 
