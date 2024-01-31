@@ -20,7 +20,7 @@ class User
 
   class << self
     def find_by_identity(sub)
-      relation = client.get_relation(
+      relation = ::Directory.client.get_relation(
         subject_type: "user",
         subject_id: nil,
         relation: "identifier",
@@ -30,7 +30,7 @@ class User
 
       raise StandardError, "No relations found for identity: #{sub}" if relation&.result.nil?
 
-      user = client.get_object(
+      user = ::Directory.client.get_object(
         object_type: relation.result.subject_type,
         object_id: relation.result.subject_id
       ).result
@@ -48,7 +48,7 @@ class User
     end
 
     def find_by_key(key)
-      user = client.get_object(object_type: "user", object_id: key).result
+      user = ::Directory.client.get_object(object_type: "user", object_id: key).result
       fields = user.properties.to_h
 
       User.new(
@@ -60,17 +60,6 @@ class User
     rescue GRPC::BadStatus, StandardError => e
       Rails.logger.error(e)
       raise StandardError, e.message
-    end
-
-    private
-
-    def client
-      @client ||= Aserto::Directory::V3::Client.new(
-        url: ENV.fetch("ASERTO_DIRECTORY_SERVICE_URL"),
-        api_key: "basic #{ENV.fetch('ASERTO_DIRECTORY_API_KEY', nil)}",
-        tenant_id: ENV.fetch("ASERTO_TENANT_ID", ""),
-        cert_path: ENV.fetch("ASERTO_DIRECTORY_GRPC_CERT_PATH", nil)
-      )
     end
   end
 end

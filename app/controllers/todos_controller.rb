@@ -5,7 +5,7 @@ class TodosController < ApplicationController
   before_action :configure_aserto, only: %i[update destroy]
 
   # authorize
-  aserto_authorize_resource
+  aserto_authorize_resource except: %i[create]
 
   # GET /todos
   def index
@@ -21,6 +21,13 @@ class TodosController < ApplicationController
 
   # POST /todos
   def create
+    check!(
+      object_type: "resource-creator",
+      object_id: "resource-creators",
+      relation: "member",
+      options: { policy_path: "rebac.check" }
+    )
+
     @todo = Todo.new(mutable_todo_params)
 
     if @todo.save
@@ -51,7 +58,7 @@ class TodosController < ApplicationController
     return unless @todo
 
     Aserto.with_resource_mapper do |_request|
-      { ownerID: @todo.owner_id }.transform_keys!(&:to_s)
+      { object_id: @todo.id.to_s }.transform_keys!(&:to_s)
     end
   end
 
