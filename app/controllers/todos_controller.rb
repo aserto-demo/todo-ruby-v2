@@ -3,8 +3,6 @@
 class TodosController < ApplicationController
   before_action :set_todo, only: %i[show update destroy]
   before_action :configure_aserto, only: %i[update destroy]
-  before_action :configure_policy_root
-  after_action :set_policy_mapper
 
   # authorize
   aserto_authorize_resource except: %i[create]
@@ -23,10 +21,12 @@ class TodosController < ApplicationController
 
   # POST /todos
   def create
-    Aserto.configure do |config|
-      config.policy_root = "rebac"
-    end
-    check!(object_type: "resource-creator", object_id: "resource-creators", relation: "member")
+    check!(
+      object_type: "resource-creator",
+      object_id: "resource-creators",
+      relation: "member",
+      options: { policy_path: "rebac.check" }
+    )
 
     @todo = Todo.new(mutable_todo_params)
 
@@ -54,23 +54,11 @@ class TodosController < ApplicationController
 
   private
 
-  def configure_policy_root
-    Aserto.configure do |config|
-      config.policy_root = ENV.fetch("ASERTO_POLICY_ROOT", nil)
-    end
-  end
-
   def configure_aserto
     return unless @todo
 
     Aserto.with_resource_mapper do |_request|
       { object_id: @todo.id.to_s }.transform_keys!(&:to_s)
-    end
-  end
-
-  def set_policy_mapper
-    Aserto.with_resource_mapper do
-      {}
     end
   end
 
