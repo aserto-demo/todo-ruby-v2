@@ -4,6 +4,7 @@ class TodosController < ApplicationController
   before_action :set_todo, only: %i[show update destroy]
   before_action :configure_aserto, only: %i[update destroy]
   before_action :configure_policy_root
+  after_action :set_policy_mapper
 
   # authorize
   aserto_authorize_resource except: %i[create]
@@ -64,6 +65,12 @@ class TodosController < ApplicationController
 
     Aserto.with_resource_mapper do |_request|
       { object_id: @todo.id.to_s }.transform_keys!(&:to_s)
+    end
+  end
+
+  def set_policy_mapper
+    Aserto.with_resource_mapper do
+      {}
     end
   end
 
