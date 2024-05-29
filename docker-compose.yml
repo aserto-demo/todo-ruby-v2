@@ -5,9 +5,7 @@ services:
       args:
         - RAILS_ENV
       context: .
-      dockerfile: Dockerfile_development
-    links:
-      - topaz
+      dockerfile: Dockerfile
     environment:
       VIRTUAL_HOST: ruby-app
       ASERTO_AUTHORIZER_SERVICE_URL: topaz:8282
@@ -19,32 +17,3 @@ services:
       - ./topaz/certs:/certs
     ports:
       - 3001:3001
-  topaz:
-    # command: >
-    #   bash -c "./topaz directory set manifest --no-check -i /data/manifest.yaml
-    #   && ./topaz directory import --no-check -i -H localhost:9292 -d /data"
-    command:
-      - run
-      - --config-file
-      - /config/local.yaml
-    container_name: topaz
-    environment:
-      - TOPAZ_POLICIES_DIR=/policies
-      - TOPAZ_CERTS_DIR=/certs
-      - TOPAZ_DB_DIR=/db
-    image: ghcr.io/aserto-dev/topaz:latest
-    ports:
-      - 8080:8080 # console http
-      - 8081:8081 # console grpc
-      - 8282:8282 # authorizer grpc
-      - 8383:8383 # authoirzer http
-      - 9292:9292 # directory grpc
-      - 9393:9393 # directory http
-      - 9494:9494 # healthcheck
-      - 9696:9696 # metrics
-    volumes:
-      - ./topaz/config:/config
-      - ./topaz/policies:/policies
-      - ./topaz/certs:/certs
-      - ./topaz/db:/db
-      - ./topaz/data:/data

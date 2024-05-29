@@ -10,14 +10,15 @@ ENV APP_HOME=/ruby-app \
     RAILS_ENV=$RAILS_ENV
 
 RUN mkdir $APP_HOME
+RUN mkdir /certs
 WORKDIR $APP_HOME
 
-ADD Gemfile Gemfile.lock $APP_HOME/
+ADD . $APP_HOME/
 RUN bundle install --jobs 20 --retry 5
-
-EXPOSE 3001
-CMD bundle exec rails s -b 0.0.0.0 -p 3001
 
 COPY entrypoint.sh /usr/bin/
 RUN chmod +x /usr/bin/entrypoint.sh
+
+EXPOSE 3001
+CMD bundle exec rails s -b 0.0.0.0 -p 3001
 ENTRYPOINT ["entrypoint.sh"]
