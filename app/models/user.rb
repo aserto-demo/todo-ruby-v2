@@ -21,11 +21,11 @@ class User
   class << self
     def find_by_identity(sub)
       relation = ::Directory.client.get_relation(
-        subject_type: "user",
-        subject_id: nil,
+        object_type: "user",
+        object_id: nil,
         relation: "identifier",
-        object_type: "identity",
-        object_id: sub
+        subject_type: "identity",
+        subject_id: sub
       )
 
       raise StandardError, "No relations found for identity: #{sub}" if relation&.result.nil?
