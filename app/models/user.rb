@@ -24,15 +24,10 @@ class User
 
       relation = case legacy_identities
                  when "true"
-
                    get_relation(object_type: "identity", subject_type: "user", id: sub)
-
                  when "false"
-
                    get_relation(object_type: "user", subject_type: "identity", id: sub)
-
                  else
-
                    begin
                      get_relation(object_type: "identity", subject_type: "user", id: sub)
                    rescue GRPC::NotFound
