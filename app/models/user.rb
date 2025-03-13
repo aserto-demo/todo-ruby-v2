@@ -20,13 +20,25 @@ class User
 
   class << self
     def find_by_identity(sub)
-      relation = ::Directory.client.get_relation(
-        object_type: "user",
-        object_id: nil,
-        relation: "identifier",
-        subject_type: "identity",
-        subject_id: sub
-      )
+      legacy_identities = ENV.fetch("LEGACY_IDENTITIES", nil)
+
+      relation = case legacy_identities
+                 when "true"
+
+                   get_relation(object_type: "identity", subject_type: "user", id: sub)
+
+                 when "false"
+
+                   get_relation(object_type: "user", subject_type: "identity", id: sub)
+
+                 else
+
+                   begin
+                     get_relation(object_type: "identity", subject_type: "user", id: sub)
+                   rescue GRPC::NotFound
+                     get_relation(object_type: "user", subject_type: "identity", id: sub)
+                   end
+                 end
 
       raise StandardError, "No relations found for identity: #{sub}" if relation&.result.nil?
 
@@ -60,6 +72,16 @@ class User
     rescue GRPC::BadStatus, StandardError => e
       Rails.logger.error(e)
       raise StandardError, e.message
+    end
+
+    def get_relation(object_type:, subject_type:, id:)
+      ::Directory.client.get_relation(
+        object_type: object_type,
+        object_id: object_type == "identity" ? id : nil,
+        relation: "identifier",
+        subject_type: subject_type,
+        subject_id: subject_type == "identity" ? id : nil
+      )
     end
   end
 end
