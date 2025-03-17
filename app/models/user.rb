@@ -19,21 +19,45 @@ class User
   end
 
   class << self
-    def find_by_identity(sub)
+    def find_by_identity(identity)
+      return find_by_legacy_identity(identity) if ::Directory.legacy
+
+      relation = ::Directory.client.get_relation(
+        object_type: "user",
+        object_id: nil,
+        relation: "identifier",
+        subject_type: "identity",
+        subject_id: identity,
+        with_objects: true
+      )
+
+      user_id = relation.result["object_id"]
+      user = relation.objects["user:#{user_id}"]
+      fields = user.properties.to_h
+
+      User.new(
+        id: user.id,
+        display_name: user.display_name,
+        email: fields["email"],
+        picture: fields["picture"]
+      )
+    rescue GRPC::BadStatus, StandardError => e
+      Rails.logger.error(e)
+      raise StandardError, e.message
+    end
+
+    def find_by_legacy_identity(identity)
       relation = ::Directory.client.get_relation(
         subject_type: "user",
         subject_id: nil,
-        relation: "identifier",
         object_type: "identity",
-        object_id: sub
+        object_id: identity,
+        relation: "identifier",
+        with_objects: true
       )
 
-      raise StandardError, "No relations found for identity: #{sub}" if relation&.result.nil?
-
-      user = ::Directory.client.get_object(
-        object_type: relation.result.subject_type,
-        object_id: relation.result.subject_id
-      ).result
+      user_id = relation.result["subject_id"]
+      user = relation.objects["user:#{user_id}"]
       fields = user.properties.to_h
 
       User.new(

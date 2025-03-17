@@ -10,5 +10,26 @@ class Directory
         cert_path: ENV.fetch("ASERTO_DIRECTORY_GRPC_CA_CERT_PATH", ENV.fetch("ASERTO_GRPC_CA_CERT_PATH", nil))
       )
     end
+
+    def legacy
+      return @legacy if defined?(@legacy)
+
+      @legacy = begin
+        @client.get_relation(
+          object_type: "identity",
+          object_id: "todoDemoIdentity",
+          subject_type: "user",
+          subject_id: "todoDemoUser",
+          relation: "identifier"
+        )
+        true
+      rescue GRPC::InvalidArgument
+        false
+      rescue GRPC::NotFound
+        true
+      rescue StandardError => e
+        Rails.logger.error(e)
+      end
+    end
   end
 end
