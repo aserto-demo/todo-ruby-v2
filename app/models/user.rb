@@ -20,7 +20,7 @@ class User
 
   class << self
     def find_by_identity(identity)
-      return find_by_legacy_identity(identity) if ::Directory.legacy
+      return find_by_legacy_identity(identity) if ::Directory.legacy?
 
       relation = ::Directory.client.get_relation(
         object_type: "user",

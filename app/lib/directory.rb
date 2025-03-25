@@ -11,7 +11,7 @@ class Directory
       )
     end
 
-    def legacy
+    def legacy?
       return @legacy if defined?(@legacy)
 
       @legacy = begin
@@ -24,11 +24,15 @@ class Directory
         )
         true
       rescue GRPC::InvalidArgument
+        # There is no identity#identifier relation. We're using new style identities.
         false
       rescue GRPC::NotFound
+        # The relation doesn't exist but the types are valid. The model uses legacy
+        # identities.
         true
       rescue StandardError => e
         Rails.logger.error(e)
+        raise e
       end
     end
   end
