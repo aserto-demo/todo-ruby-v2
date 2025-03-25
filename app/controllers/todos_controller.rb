@@ -30,7 +30,7 @@ class TodosController < ApplicationController
 
     @todo = Todo.new(mutable_todo_params)
 
-    if @todo.save!
+    if @todo.save
       render json: @todo, status: :ok, location: @todo
     else
       render json: @todo.errors, status: :unprocessable_entity
@@ -39,7 +39,7 @@ class TodosController < ApplicationController
 
   # PATCH/PUT /todos/:id
   def update
-    if @todo.update!(update_todo_params)
+    if @todo.update(update_todo_params)
       render json: @todo
     else
       render json: @todo.errors, status: :unprocessable_entity
@@ -48,7 +48,7 @@ class TodosController < ApplicationController
 
   # DELETE /todos/:id
   def destroy
-    @todo.destroy!
+    @todo.destroy
     render json: { success: true, message: "Todo deleted" }
   end
 
