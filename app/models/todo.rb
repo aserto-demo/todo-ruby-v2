@@ -14,12 +14,18 @@ class Todo < ApplicationRecord
       object_id: todo.id.to_s,
       relation: "owner"
     )
+  rescue GRPC::BadStatus, StandardError => e
+    Rails.logger.error(e)
+    raise StandardError, e.message
   end
 
   after_destroy do |todo|
     ::Directory.client.delete_object(
       object_type: "resource", object_id: todo.id.to_s, with_relations: true
     )
+  rescue GRPC::BadStatus, StandardError => e
+    Rails.logger.error(e)
+    raise StandardError, e.message
   end
 
   def as_json(_options = {})

@@ -15,23 +15,23 @@ class Directory
       return @legacy if defined?(@legacy)
 
       @legacy = begin
-        @client.get_relation(
+        client.get_relation(
           object_type: "identity",
           object_id: "todoDemoIdentity",
           subject_type: "user",
           subject_id: "todoDemoUser",
           relation: "identifier"
         )
-        true
+        return true
       rescue GRPC::InvalidArgument
         # There is no identity#identifier relation. We're using new style identities.
-        false
+        return false
       rescue GRPC::NotFound
         # The relation doesn't exist but the types are valid. The model uses legacy
         # identities.
-        true
+        return true
       rescue StandardError => e
-        Rails.logger.error(e)
+        Rails.logger.error("Could not determine identity relation direction: #{e}")
         raise e
       end
     end

@@ -10,6 +10,7 @@ class ApplicationController < ActionController::API
   end
 
   rescue_from Aserto::AccessDenied do |exception|
+    Rails.logger.error("Could not access #{request.method}: #{request.path}")
     render json: { error: exception.message }, status: :forbidden
   end
 
