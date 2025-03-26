@@ -10,5 +10,30 @@ class Directory
         cert_path: ENV.fetch("ASERTO_DIRECTORY_GRPC_CA_CERT_PATH", ENV.fetch("ASERTO_GRPC_CA_CERT_PATH", nil))
       )
     end
+
+    def legacy?
+      return @legacy if defined?(@legacy)
+
+      @legacy = begin
+        client.get_relation(
+          object_type: "identity",
+          object_id: "todoDemoIdentity",
+          subject_type: "user",
+          subject_id: "todoDemoUser",
+          relation: "identifier"
+        )
+        return true
+      rescue GRPC::InvalidArgument
+        # There is no identity#identifier relation. We're using new style identities.
+        return false
+      rescue GRPC::NotFound
+        # The relation doesn't exist but the types are valid. The model uses legacy
+        # identities.
+        return true
+      rescue StandardError => e
+        Rails.logger.error("Could not determine identity relation direction: #{e}")
+        raise e
+      end
+    end
   end
 end
