@@ -5,8 +5,8 @@ Set up the following environment variables:
 
 ### ENV
 ```
-JWKS_URI=https://citadel.demo.aserto.com/dex/keys
-ISSUER=https://citadel.demo.aserto.com/dex
+JWKS_URI=https://citadel.authzen-interop.net/dex/keys
+ISSUER=https://citadel.authzen-interop.net/dex
 AUDIENCE=citadel-app
 
 ASERTO_POLICY_ROOT="todoApp"
