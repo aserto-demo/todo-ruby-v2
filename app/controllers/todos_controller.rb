@@ -2,9 +2,10 @@
 
 class TodosController < ApplicationController
   before_action :set_todo, only: %i[show update destroy]
+  before_action :configure_aserto, only: %i[update destroy]
 
   # authorize
-  aserto_authorize_resource
+  aserto_authorize_resource except: %i[create]
 
   # GET /todos
   def index
@@ -13,14 +14,21 @@ class TodosController < ApplicationController
     render json: @todos
   end
 
-  # GET /todos/1
+  # GET /todos/:id
   def show
     render json: @todo
   end
 
   # POST /todos
   def create
-    @todo = Todo.new(todo_params)
+    check!(
+      object_type: "resource-creator",
+      object_id: "resource-creators",
+      relation: "member",
+      options: { policy_path: "rebac.check" }
+    )
+
+    @todo = Todo.new(mutable_todo_params)
 
     if @todo.save
       render json: @todo, status: :ok, location: @todo
@@ -29,22 +37,30 @@ class TodosController < ApplicationController
     end
   end
 
-  # PATCH/PUT /todos/1
+  # PATCH/PUT /todos/:id
   def update
-    if @todo.update(todo_params)
+    if @todo.update(update_todo_params)
       render json: @todo
     else
       render json: @todo.errors, status: :unprocessable_entity
     end
   end
 
-  # DELETE /todos/1
+  # DELETE /todos/:id
   def destroy
     @todo.destroy
     render json: { success: true, message: "Todo deleted" }
   end
 
   private
+
+  def configure_aserto
+    return unless @todo
+
+    Aserto.with_resource_mapper do |_request|
+      { object_id: @todo.id.to_s }.transform_keys!(&:to_s)
+    end
+  end
 
   # Use callbacks to share common setup or constraints between actions.
   def set_todo
@@ -58,10 +74,21 @@ class TodosController < ApplicationController
     end
   end
 
+  def update_todo_params
+    normalize_params.permit(:title, :completed).to_h.transform_keys do |key|
+      key.to_s.tableize.singularize.to_sym
+    end
+  end
+
+  def mutable_todo_params
+    user = User.find_by_identity(current_user_sub)
+    update_todo_params.merge!(owner_id: user.id)
+  end
+
   def normalize_params
     params.delete(:todo)
     ActionController::Parameters.new(
-      params.permit(:ID, :Title, :Completed, :OwnerID, :ownerID).to_h.transform_keys do |key|
+      params.permit(:ID, :Title, :Completed, :OwnerID, :ownerID, :id).to_h.transform_keys do |key|
         key.to_s.tableize.singularize.to_sym
       end
     )

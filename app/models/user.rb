@@ -19,56 +19,71 @@ class User
   end
 
   class << self
-    def find(sub)
-      require "aserto/directory"
+    def find_by_identity(identity)
+      return find_by_legacy_identity(identity) if ::Directory.legacy?
 
-      object_id = Aserto::Directory::Common::V2::ObjectIdentifier.new(
-        type: "user",
-        key: sub
+      relation = ::Directory.client.get_relation(
+        object_type: "user",
+        object_id: nil,
+        relation: "identifier",
+        subject_type: "identity",
+        subject_id: identity,
+        with_objects: true
       )
-      request = Aserto::Directory::Reader::V2::GetObjectRequest.new(param: object_id)
 
-      begin
-        resp = client.get_object(request, headers)
+      user_id = relation.result["object_id"]
+      user = relation.objects["user:#{user_id}"]
+      fields = user.properties.to_h
 
-        result = resp.result
-        fields = result.properties.fields
-        User.new(
-          id: result.id,
-          display_name: result.display_name,
-          email: fields["email"]["string_value"],
-          picture: fields["picture"]["string_value"]
-        )
-      rescue GRPC::BadStatus, StandardError => e
-        Rails.logger.error(e)
-      end
-    end
-
-    private
-
-    def headers
-      api_key = ENV.fetch("ASERTO_DIRECTORY_API_KEY", nil)
-      tenant_id = ENV.fetch("ASERTO_TENANT_ID", nil)
-      {
-        metadata: {}.tap do |h|
-          h["authorization"] = "basic #{api_key}" if api_key && api_key != ""
-          h["aserto-tenant-id"] = tenant_id if tenant_id && tenant_id != ""
-        end
-      }
-    end
-
-    def client
-      @client ||= Aserto::Directory::Reader::V2::Reader::Stub.new(
-        ENV.fetch("ASERTO_DIRECTORY_SERVICE_URL"),
-        load_certs
+      User.new(
+        id: user.id,
+        display_name: user.display_name,
+        email: fields["email"],
+        picture: fields["picture"]
       )
+    rescue GRPC::BadStatus, StandardError => e
+      Rails.logger.error(e)
+      raise StandardError, e.message
     end
 
-    def load_certs
-      cert_path = ENV.fetch("DIRECTORY_GRPC_CERT_PATH", nil)
-      return GRPC::Core::ChannelCredentials.new unless cert_path
+    def find_by_legacy_identity(identity)
+      relation = ::Directory.client.get_relation(
+        subject_type: "user",
+        subject_id: nil,
+        object_type: "identity",
+        object_id: identity,
+        relation: "identifier",
+        with_objects: true
+      )
 
-      GRPC::Core::ChannelCredentials.new(File.read(cert_path))
+      user_id = relation.result["subject_id"]
+      user = relation.objects["user:#{user_id}"]
+      fields = user.properties.to_h
+
+      User.new(
+        id: user.id,
+        display_name: user.display_name,
+        email: fields["email"],
+        picture: fields["picture"]
+      )
+    rescue GRPC::BadStatus, StandardError => e
+      Rails.logger.error(e)
+      raise StandardError, e.message
+    end
+
+    def find_by_key(key)
+      user = ::Directory.client.get_object(object_type: "user", object_id: key).result
+      fields = user.properties.to_h
+
+      User.new(
+        id: user.id,
+        display_name: user.display_name,
+        email: fields["email"],
+        picture: fields["picture"]
+      )
+    rescue GRPC::BadStatus, StandardError => e
+      Rails.logger.error(e)
+      raise StandardError, e.message
     end
   end
 end

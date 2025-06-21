@@ -10,12 +10,19 @@ class ApplicationController < ActionController::API
   end
 
   rescue_from Aserto::AccessDenied do |exception|
+    Rails.logger.error("Could not access #{request.method}: #{request.path}")
     render json: { error: exception.message }, status: :forbidden
+  end
+
+  def current_user_sub
+    @current_user_sub ||= (
+      (Auth::VerifyJwt.call((request.headers["Authorization"] || "").split.last) || []).first || {}
+    )["sub"]
   end
 
   private
 
   def validate_jwt
-    Auth::VerifyJwt.call(request.headers["Authorization"].split.last)
+    Auth::VerifyJwt.call((request.headers["Authorization"] || "").split.last)
   end
 end
